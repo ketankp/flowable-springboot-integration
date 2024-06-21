@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+        xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:flowable="http://flowable.org/bpmn"
+        targetNamespace="http://www.flowable.org/processdef">
+    <process id="aitRequest" name="A simple process for AIT request." isExecutable="true">
+        <startEvent id="start" />
+        <sequenceFlow sourceRef="start" targetRef="reviewAITRequest" />
+        <userTask id="reviewAITRequest" name="Review the submitted AIT Request" />
+        <sequenceFlow sourceRef="reviewAITRequest" targetRef="decision" />
+        <exclusiveGateway id="decision" />
+        <sequenceFlow sourceRef="decision" targetRef="aitApproved">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[${approved}]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow sourceRef="decision" targetRef="aitRejected">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[${!approved}]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <serviceTask id="aitApproved" name="AIT Approved"
+                     flowable:class="com.ketankp.springboot_flowable_integration.service.AITApproveService" />
+        <sequenceFlow sourceRef="aitApproved" targetRef="end" />
+        <serviceTask id="aitRejected" name="Send out rejection email"
+                     flowable:class="com.ketankp.springboot_flowable_integration.service.AITRejectedService" />
+        <sequenceFlow sourceRef="aitRejected" targetRef="end" />
+        <endEvent id="end" />
+    </process>
+</definitions>
